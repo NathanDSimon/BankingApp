@@ -23,12 +23,28 @@ public abstract class User implements Serializable {
 	{
 		this.connectedAccounts.add(a);
 	}
-	public String getUsername() {
+	public String getUsername() 
+	{
 		return username;
 	}
 	public boolean checkPassword(String pass)
 	{
 		return this.password.compareTo(pass) == 0;
+	}
+	public void setPassword(String oldPass, String newPass)
+	{
+		if((this.checkPassword(oldPass) && this.equals(DataIO.currentUser)) || DataIO.currentUser.isAdmin())
+		{
+			password = newPass;
+		}
+		else
+		{
+			System.out.println("Password change failed.");
+			if(!(this.checkPassword(oldPass)))
+			{
+				System.out.println("Password entered was incorrect.");
+			}
+		}
 	}
 	protected String getPersonalInfoBit(String key)
 	{

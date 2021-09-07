@@ -17,12 +17,11 @@ public class Admin extends User {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5155591158561999787L;
-	private static long transferLimit;
-	private static HashMap<String, Object> settings;
-	public static long getTransferLimit()
+	private static final long serialVersionUID = -4095037397534219741L;
+	private static HashMap<String, Double> settings;
+	public static double getTransferLimit()
 	{
-		return (long)settings.get("transferLimit");
+		return (double)settings.get("transferLimit");
 	}
 	private static void writeSettings()
 	{
@@ -38,33 +37,34 @@ public class Admin extends User {
 			System.exit(-1);
 		}
 	}
-	public static void setTransferLimit(long lim) throws PermissionException
+	public static void setTransferLimit(double lim) throws PermissionException
 	{
 		if(!(DataIO.currentUser.isAdmin()))
 		{
 			throw new PermissionException();
 		}
-		settings.replace("transferLimit", transferLimit, lim);
+		settings.remove("transferLimit");
+		settings.put("transferLimit", lim);
 		writeSettings();
 	}
 	static {
 		try {
 			FileInputStream fileIn = new FileInputStream("data/settings.cfg");
 			ObjectInputStream oin = new ObjectInputStream(fileIn);
-			settings = (HashMap<String, Object>)oin.readObject();
+			settings = (HashMap<String, Double>)oin.readObject();
 			oin.close();
 			fileIn.close();
 		}catch (EOFException e)
 		{
-			settings = new HashMap<String, Object>();
-			settings.put("transferLimit", 10000L);
+			settings = new HashMap<String, Double>();
+			settings.put("transferLimit", 10000.0);
 			writeSettings();
 		}
 		catch (FileNotFoundException e) {
 			try {
 				(new File("data/settings.cfg")).createNewFile();
-				settings = new HashMap<String, Object>();
-				settings.put("transferLimit", 10000L);
+				settings = new HashMap<String, Double>();
+				settings.put("transferLimit", 10000.0);
 				writeSettings();
 			} catch (IOException e1) {
 				e1.printStackTrace();

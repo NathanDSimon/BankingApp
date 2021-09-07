@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 @SuppressWarnings("unchecked")
 public class DataIO {
 	public static HashMap<String, User> users;
@@ -17,18 +18,28 @@ public class DataIO {
 	public static boolean loggedIn = false;
 	public static User currentUser = null;
 	public static Account selectedAccount = null;
+	public static Account getAccountByID(int id)
+	{
+		for(Account a : accounts)
+		{
+			if(a.getAccountNumber() == id)
+				return a;
+		}
+		return null;
+	}
 	public static void selectAccount(int id) throws PermissionException
 	{
-		if(!(accounts.size() >= id))
+		Account a = getAccountByID(id);
+		if(a == null)
 		{
 			System.out.println("Account does not exist.");
 			return;
 		}
-		if(!(accounts.get(id).currentUserCanCheckAccount()))
+		if(!(a.currentUserCanCheckAccount()))
 		{
 			throw new PermissionException();
 		}
-		selectedAccount = accounts.get(id);
+		selectedAccount = a;
 		
 	}
 	public static void WriteAll()
@@ -66,6 +77,7 @@ public class DataIO {
 			{
 				loggedIn = true;
 				currentUser = intended;
+				System.out.println("Logged in as: " + username);
 			}
 		}
 	}
@@ -130,7 +142,7 @@ public class DataIO {
 		}
 		return Account.create(otherUsers);
 	}
-	public static void init()
+	static
 	{
 		users = new HashMap<String, User>();
 		accounts = new ArrayList<Account>();
@@ -140,6 +152,19 @@ public class DataIO {
 			users = (HashMap<String, User>)oin.readObject();
 			oin.close();
 			fileIn.close();
+		} catch (FileNotFoundException e) {
+			try {
+				(new File("data/users.cfg")).createNewFile();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			System.out.println("Created users configuration file.");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
 			FileInputStream actIn = new FileInputStream("data/accounts.cfg");
 			ObjectInputStream ain = new ObjectInputStream(actIn);
 			accounts = (ArrayList<Account>)ain.readObject();
@@ -147,20 +172,19 @@ public class DataIO {
 			actIn.close();
 		} catch (FileNotFoundException e) {
 			try {
-				(new File("data/settings.cfg")).createNewFile();
+				(new File("data/accounts.cfg")).createNewFile();
+
+				System.out.println("Created accounts configuration file.");
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				System.exit(1);
 			}
-			System.out.println("Created settings configuration file.");
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			System.exit(1);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		if(!(users.containsKey("root")))
+		if(!(users.containsKey("root"))) //This will not be necessary once we have JUnit testing!
 		{
 			HashMap<String, String> dummyData = new HashMap<String, String>();
 			Admin.createNew("root", "ChangeMe", dummyData);
